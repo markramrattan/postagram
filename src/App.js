@@ -20,6 +20,7 @@ function Router() {
   /* create a couple of pieces of initial state */
   const [showOverlay, updateOverlayVisibility] = useState(false);
   const [posts, updatePosts] = useState([]);
+  const [myPosts, updateMyPosts] = useState([]);
 
   /* fetch posts when component loads */
   useEffect(() => {
@@ -39,16 +40,23 @@ function Router() {
     setPostState(postsArray);
   }
   async function setPostState(postsArray) {
+    const user = await Auth.currentAuthenticatedUser();
+    const myPostData = postsArray.filter(p => p.owner === user.username);
+    updateMyPosts(myPostData);
     updatePosts(postsArray);
   }
   return (
     <>
       <HashRouter>
+      <AmplifySignOut />
           <div className={contentStyle}>
             <Header />
             <hr className={dividerStyle} />
             <Button title="New Post" onClick={() => updateOverlayVisibility(true)} />
             <Switch>
+            <Route exact path="/myposts" >
+  <Posts posts={myPosts} />
+</Route>
               <Route exact path="/" >
                 <Posts posts={posts} />
               </Route>
@@ -57,7 +65,7 @@ function Router() {
               </Route>
             </Switch>
           </div>
-          <AmplifySignOut />
+         
         </HashRouter>
         { showOverlay && (
           <CreatePost
